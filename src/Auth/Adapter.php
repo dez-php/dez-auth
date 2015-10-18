@@ -3,6 +3,7 @@
     namespace Dez\Auth;
 
     use Dez\Auth\Hasher\UUID;
+    use Dez\Auth\Models\CredentialModel;
     use Dez\DependencyInjection\ContainerInterface;
     use Dez\DependencyInjection\InjectableInterface;
     use Dez\Http\CookiesInterface;
@@ -13,6 +14,8 @@
 
         const SALT = '$|AUjz$guB1HwH627l?gl&pB3fS8$KBD';
 
+        const STATUS_ACTIVE = 'active';
+
         /**
          * @var ContainerInterface
          */
@@ -22,6 +25,16 @@
          * @var Auth
          */
         protected $auth;
+
+        /**
+         * @var string
+         */
+        protected $email;
+
+        /**
+         * @var string
+         */
+        protected $password;
 
         /**
          * @return ContainerInterface
@@ -52,6 +65,38 @@
          */
         public function setAuth( Auth $auth ) {
             $this->auth = $auth;
+            return $this;
+        }
+
+        /**
+         * @return mixed
+         */
+        public function getEmail() {
+            return $this->email;
+        }
+
+        /**
+         * @param mixed $email
+         * @return $this
+         */
+        public function setEmail( $email ) {
+            $this->email = $email;
+            return $this;
+        }
+
+        /**
+         * @return mixed
+         */
+        public function getPassword() {
+            return $this->password;
+        }
+
+        /**
+         * @param mixed $password
+         * @return $this
+         */
+        public function setPassword( $password ) {
+            $this->password = $password;
             return $this;
         }
 
@@ -145,6 +190,31 @@
          */
         public function createSecureHash( $authKey = '' ) {
             return UUID::v5( $authKey . $this->getUniqueHash() );
+        }
+
+        protected function checkCredential() {
+
+            if( ! $this->getEmail() || ! $this->getPassword() ) {
+                throw new InvalidDataException( 'Set before email and password' );
+            }
+
+            $model  = CredentialModel::query()
+                ->where( 'email', $this->getEmail() )
+                ->where( 'password', $this->hashPassword( $this->getPassword() ) )
+                ->first();
+
+            if( $model->exists() ) {
+                if( $model->get( 'status' ) == self::STATUS_ACTIVE ) {
+                    $this->getAuth()->setModel( $model );
+                } else {
+                    throw new AuthException( 'Account was blocked' );
+                }
+            } else {
+                throw new InvalidPasswordException( 'Invalid email or password' );
+            }
+
+            return $model;
+
         }
 
         /**

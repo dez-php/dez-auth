@@ -2,6 +2,7 @@
 
     namespace Dez\Auth;
 
+    use Dez\Auth\Adapter\Session;
     use Dez\Auth\Models\CredentialModel;
 
     /**
@@ -40,8 +41,35 @@
             return $this;
         }
 
+        public function identifyToken( $token ) {
+            $this->getAdapter()->setToken( $token )->authenticate();
+            return $this;
+        }
+
+        public function generateToken( $email, $password ) {
+            return $this->getAdapter()
+                ->setEmail( $email )
+                ->setPassword( $password )
+                ->generateToken();
+        }
+
+        public function create( $email, $password ) {
+            $model  = new CredentialModel();
+
+            $model
+                ->set( 'email', $email )
+                ->set( 'password', $this->getAdapter()->hashPassword( $password ) )
+                ->set( 'status', Session::STATUS_ACTIVE );
+
+            $model->save();
+
+            $this->setModel( $model );
+
+            return $this;
+        }
+
         /**
-         * @return mixed
+         * @return Adapter
          */
         public function getAdapter() {
             return $this->adapter;

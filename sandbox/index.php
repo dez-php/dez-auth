@@ -13,7 +13,8 @@
     use Dez\ORM\Connection;
     use Dez\Session\Adapter\Files;
 
-    error_reporting(1); ini_set('display_errors', 1);
+    error_reporting(1);
+    ini_set('display_errors', 'On');
 
     include_once '../vendor/autoload.php';
 
@@ -33,17 +34,27 @@
     $di->set( 'cookies', new Cookies() );
 
     $di->set( 'auth', new Auth( new Session( $di ) ) );
+
+    $di->set( 'auth_token', new Auth( new Token( $di ) ) );
     //////////////////
 
-    $email      = 'stewie@mail.com';
+    $email      = 'qwerty@mail.com';
     $password   = 'qwerty';
 
     /** @var $auth Auth */
-    $auth    = $di->get('auth');
+    $auth       = $di->get('auth');
+    $apiAuth    = $di->get('auth_token');
 
-    $auth->authenticate( $email, $password );
+//    $auth->create($email, $password); die;
 
-    $di->get('cookies')->send();
-    var_dump( $auth->getAdapter(), $queries );
+//    $auth->authenticate( $email, $password );
+
+    $apiAuth->identifyToken( '32258333-bb11-4abf-919c-03fb01810cea' );
+
+    var_dump(
+        $apiAuth->user()->getEmail(),
+//        $apiAuth->generateToken($email, $password),
+        $auth->user()->getEmail(), $queries
+    );
 
 

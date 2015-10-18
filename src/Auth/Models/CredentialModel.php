@@ -2,6 +2,7 @@
 
     namespace Dez\Auth\Models;
 
+    use Dez\Auth\Models\Auth\SessionModel;
     use Dez\Auth\Models\Auth\TokenModel;
     use Dez\ORM\Model\Table as ORMTable;
 

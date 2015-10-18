@@ -16,6 +16,10 @@
          */
         static protected $table = 'auth_tokens';
 
+        /**
+         * @return mixed
+         * @throws \Dez\ORM\Exception
+         */
         public function credentials() {
             return $this->hasOne( CredentialModel::class, 'id', 'auth_id' );
         }

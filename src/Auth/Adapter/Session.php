@@ -4,7 +4,6 @@
 
     use Dez\Auth\Adapter;
     use Dez\Auth\AuthException;
-    use Dez\Auth\InvalidPasswordException;
     use Dez\Auth\Models\Auth\SessionModel;
     use Dez\Auth\Models\CredentialModel;
     use Dez\DependencyInjection\ContainerInterface;
@@ -17,12 +16,19 @@
 
         const COOKIE_KEY    = 'dez-auth-key';
 
-        const STATUS_ACTIVE = 'active';
-
+        /**
+         * @var string
+         */
         protected $email;
 
+        /**
+         * @var string
+         */
         protected $password;
 
+        /**
+         * @param ContainerInterface $di
+         */
         public function __construct( ContainerInterface $di ) {
             $this->setDi( $di );
             $this->cleanSessions();
@@ -50,62 +56,18 @@
 
         /**
          * @return $this
-         * @throws AuthException
-         * @throws InvalidPasswordException
+         * @throws \Exception
          */
         public function authenticate() {
-
-            $model  = CredentialModel::query()
-                ->where( 'email', $this->getEmail() )
-                ->where( 'password', $this->hashPassword( $this->getPassword() ) )
-                ->first();
-
-            if( $model->exists() ) {
-                if( $model->get( 'status' ) == self::STATUS_ACTIVE ) {
-                    $this->getAuth()->setModel( $model );
-                    $this->makeSession();
-                } else {
-                    throw new AuthException( 'Account was blocked' );
-                }
-            } else {
-                throw new InvalidPasswordException( 'Invalid email or password' );
-            }
-
+            $this->checkCredential();
+            $this->makeSession();
             return $this;
         }
 
         /**
-         * @return mixed
-         */
-        public function getEmail() {
-            return $this->email;
-        }
-
-        /**
-         * @param mixed $email
          * @return $this
+         * @throws AuthException
          */
-        public function setEmail( $email ) {
-            $this->email = $email;
-            return $this;
-        }
-
-        /**
-         * @return mixed
-         */
-        public function getPassword() {
-            return $this->password;
-        }
-
-        /**
-         * @param mixed $password
-         * @return $this
-         */
-        public function setPassword( $password ) {
-            $this->password = $password;
-            return $this;
-        }
-
         public function makeSession() {
             $randomHash         = $this->getRandomHash();
 
@@ -122,10 +84,14 @@
             if( ! $sessionModel->exists() ) {
                 $sessionModel->set( 'auth_id', $credentialModel->id() );
                 $sessionModel->set( 'unique_hash', $this->getUniqueHash() );
-                $sessionModel->set( 'created_at', ( new \DateTime( '+30 days' ) )->format( 'Y-m-d H:i:s' ) );
+                $sessionModel->set( 'created_at', ( new \DateTime() )->format( 'Y-m-d H:i:s' ) );
             }
 
-            $this->getCookies()->set( $this->getCookieAuthKey(), $randomHash, time() + 86400 * 30 )->send();
+            $cookies    = $this->getCookies();
+            $expire     = time() + ( 86400 * 30 );
+            $cookies->set( $this->getCookieAuthKey(), $randomHash, $expire, '/' );
+
+            $cookies->send();
 
             $sessionModel->save();
 
@@ -154,6 +120,9 @@
             return $this;
         }
 
+        /**
+         * @return string
+         */
         public function getCookieAuthKey() {
             return self::COOKIE_KEY . '_' . $this->getUniqueHash();
         }

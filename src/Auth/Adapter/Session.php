@@ -17,16 +17,6 @@
         const COOKIE_KEY    = 'dez-auth-key';
 
         /**
-         * @var string
-         */
-        protected $email;
-
-        /**
-         * @var string
-         */
-        protected $password;
-
-        /**
          * @param ContainerInterface $di
          */
         public function __construct( ContainerInterface $di ) {
@@ -47,6 +37,7 @@
             if( $authKey = $cookies->get( $key, false ) ) {
                 $sessionModel   = $this->findSessionModel( $this->createSecureHash( $authKey ) );
                 if( $sessionModel->exists() ) {
+                    $sessionModel->setUsedAt( ( new \DateTime() )->format( 'Y-m-d H:i:s' ) )->save();
                     $this->getAuth()->setModel( $sessionModel->credentials() );
                 }
             }

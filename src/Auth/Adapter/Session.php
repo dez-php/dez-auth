@@ -17,16 +17,6 @@
         const COOKIE_KEY    = 'dez-auth-key';
 
         /**
-         * @var string
-         */
-        protected $email;
-
-        /**
-         * @var string
-         */
-        protected $password;
-
-        /**
          * @param ContainerInterface $di
          */
         public function __construct( ContainerInterface $di ) {

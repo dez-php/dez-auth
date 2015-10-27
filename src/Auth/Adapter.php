@@ -192,6 +192,12 @@
             return UUID::v5( $authKey . $this->getUniqueHash() );
         }
 
+        /**
+         * @return \Dez\ORM\Model\Table
+         * @throws AuthException
+         * @throws InvalidDataException
+         * @throws InvalidPasswordException
+         */
         protected function checkCredential() {
 
             if( ! $this->getEmail() || ! $this->getPassword() ) {
@@ -218,10 +224,18 @@
         }
 
         /**
-         * @return mixed
+         * @return $this
          */
         abstract public function authenticate();
 
+        /**
+         * @return $this
+         */
+        abstract public function logout();
+
+        /**
+         * @return $this
+         */
         abstract public function initialize();
 
     }

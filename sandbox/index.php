@@ -51,10 +51,19 @@
 
     $apiAuth->identifyToken( '32258333-bb11-4abf-919c-03fb01810cea' );
 
+
     var_dump(
         $apiAuth->user()->getEmail(),
 //        $apiAuth->generateToken($email, $password),
         $auth->user()->getEmail(), $queries
     );
+
+    if( $apiAuth->isUser() ) {
+        $apiAuth->logout();
+    }
+
+    if( $auth->isUser() ) {
+        $auth->logout();
+    }
 
 

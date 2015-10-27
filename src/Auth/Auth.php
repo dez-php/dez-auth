@@ -51,6 +51,10 @@
             return $this;
         }
 
+        public function logout() {
+//            $this->getAdapter()-
+        }
+
         /**
          * @param $email
          * @param $password

@@ -109,6 +109,16 @@
         /**
          * @return $this
          */
+        public function logout() {
+            TokenModel::query()
+                ->where( 'token', $this->getToken() )
+                ->delete();
+            return $this;
+        }
+
+        /**
+         * @return $this
+         */
         public function cleanTokens() {
             TokenModel::query()
                 ->where( 'expiry_date', ( new \DateTime() )->format( 'Y-m-d H:i:s' ), '<=' )

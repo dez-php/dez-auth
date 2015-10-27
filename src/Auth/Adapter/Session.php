@@ -57,6 +57,21 @@
 
         /**
          * @return $this
+         */
+        public function logout() {
+            $cookie         = $this->getCookies()->get( $this->getCookieAuthKey() );
+            $sessionModel   = $this->findSessionModel( $this->createSecureHash( $cookie->getValue() ) );
+
+            if( $sessionModel->exists() ) {
+                $sessionModel->delete();
+                $cookie->delete();
+            }
+
+            return $this;
+        }
+
+        /**
+         * @return $this
          * @throws AuthException
          */
         public function makeSession() {

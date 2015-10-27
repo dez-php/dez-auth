@@ -51,8 +51,12 @@
             return $this;
         }
 
+        /**
+         * @return $this
+         */
         public function logout() {
-//            $this->getAdapter()-
+            $this->getAdapter()->logout();
+            return $this;
         }
 
         /**

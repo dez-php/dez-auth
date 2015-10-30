@@ -4,6 +4,7 @@
 
     use Dez\Auth\Adapter\Session;
     use Dez\Auth\Models\CredentialModel;
+    use Dez\DependencyInjection\Container;
 
     /**
      * Class Auth
@@ -41,11 +42,28 @@
             return $this;
         }
 
+        /**
+         * @param $token
+         * @return $this
+         */
         public function identifyToken( $token ) {
             $this->getAdapter()->setToken( $token )->authenticate();
             return $this;
         }
 
+        /**
+         * @return $this
+         */
+        public function logout() {
+            $this->getAdapter()->logout();
+            return $this;
+        }
+
+        /**
+         * @param $email
+         * @param $password
+         * @return mixed
+         */
         public function generateToken( $email, $password ) {
             return $this->getAdapter()
                 ->setEmail( $email )
@@ -53,13 +71,22 @@
                 ->generateToken();
         }
 
+        /**
+         * @param $email
+         * @param $password
+         * @return $this
+         */
         public function create( $email, $password ) {
-            $model  = new CredentialModel();
+            $model      = new CredentialModel();
+
+            $dateToday  = ( new \DateTime() )->format( 'Y-m-d H:i:s' );
 
             $model
-                ->set( 'email', $email )
-                ->set( 'password', $this->getAdapter()->hashPassword( $password ) )
-                ->set( 'status', Session::STATUS_ACTIVE );
+                ->setEmail( $email )
+                ->setPassword( $this->getAdapter()->hashPassword( $password ) )
+                ->setStatus( Session::STATUS_ACTIVE )
+                ->setCreatedAt( $dateToday )
+                ->setUpdatedAt( $dateToday );
 
             $model->save();
 
@@ -119,6 +146,23 @@
          */
         public function user() {
             return $this->getModel();
+        }
+
+        /**
+         * @param $authId
+         * @return $this
+         */
+        public function forceLogin( $authId ) {
+
+            $authModel  = CredentialModel::one( $authId );
+
+            if( $authModel->exists() ) {
+                $this->setModel( $authModel );
+                $this->setAdapter( new Session( Container::instance() ) );
+                $this->setAdapter()->makeSession();
+            }
+
+            return $this;
         }
 
     }

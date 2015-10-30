@@ -37,6 +37,7 @@
             if( $authKey = $cookies->get( $key, false ) ) {
                 $sessionModel   = $this->findSessionModel( $this->createSecureHash( $authKey ) );
                 if( $sessionModel->exists() ) {
+                    $sessionModel->setUsedAt( ( new \DateTime() )->format( 'Y-m-d H:i:s' ) )->save();
                     $this->getAuth()->setModel( $sessionModel->credentials() );
                 }
             }
@@ -51,6 +52,21 @@
         public function authenticate() {
             $this->checkCredential();
             $this->makeSession();
+            return $this;
+        }
+
+        /**
+         * @return $this
+         */
+        public function logout() {
+            $cookie         = $this->getCookies()->get( $this->getCookieAuthKey() );
+            $sessionModel   = $this->findSessionModel( $this->createSecureHash( $cookie->getValue() ) );
+
+            if( $sessionModel->exists() ) {
+                $sessionModel->delete();
+                $cookie->delete();
+            }
+
             return $this;
         }
 

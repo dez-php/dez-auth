@@ -34,7 +34,7 @@
             $nsString   = '';
 
             for( $i = 0, $c = strlen( $namespace ); $i < $c; $i++ ) {
-                $nsString   .= chr( hexdec( $namespace[ $i ] . $namespace[ $i + 1 ] ) );
+                $nsString   .= chr( hexdec( $namespace[ $i ] . ( $i == 31 ? '' : $namespace[ $i + 1 ] ) ) );
             }
 
             $sha1   = sha1( $nsString . $data );

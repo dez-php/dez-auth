@@ -201,7 +201,7 @@
         protected function checkCredential() {
 
             if( ! $this->getEmail() || ! $this->getPassword() ) {
-                throw new InvalidDataException( 'Set before email and password' );
+                throw new InvalidDataException( 'Enter the email address and password for the account' );
             }
 
             $model  = CredentialModel::query()
@@ -216,7 +216,7 @@
                     throw new AuthException( 'Account was blocked' );
                 }
             } else {
-                throw new InvalidPasswordException( 'Invalid email or password' );
+                throw new InvalidPasswordException( 'Email or password is incorrect' );
             }
 
             return $model;
